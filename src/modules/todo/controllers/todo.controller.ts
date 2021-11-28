@@ -2,16 +2,34 @@ import { BadRequestException, Body, Controller, Delete, Get, HttpException, Http
 import { TodoService } from '../services/todo.service';
 import { Todo } from '../entities/todo.entity';
 import { CreateDto, UpdateDto } from './dto';
+import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { type } from 'os';
+
+@ApiTags('todo')
 @Controller('rest/todo')
 export class TodoController {
   constructor(private readonly todoService: TodoService) {}
 
   @Get()
+  @ApiResponse({
+    status:200,
+    description: 'get all todo',
+    type:[Todo]
+  })
   getAllAction(): Promise<Todo[]> {
     return this.todoService.findAll();
   }
 
   @Get(':id')
+  @ApiResponse({
+    status:200,
+    description: 'get todo by id',
+    type: Todo
+  })
+  @ApiResponse({
+    status:404,
+    description: 'not found',
+  })
   async getOneAction(@Param('id') id: string): Promise<Todo> {
     const todo = await this.todoService.findOne(id);
     if (todo === undefined) {
@@ -24,6 +42,16 @@ export class TodoController {
   } 
 
   @Post()
+  @ApiResponse({
+    status:200,
+    description: 'create todo',
+    type: Todo
+  })
+  @ApiResponse({
+    status:404,
+    description: 'not found',
+  })
+  @ApiBody({ type: CreateDto })
   createAction(@Body() createDto: CreateDto): Promise<Todo> {
     const todo = new Todo();
     todo.title = createDto.title;
@@ -34,6 +62,16 @@ export class TodoController {
   }
 
   @Put(':id')
+  @ApiResponse({
+    status:200,
+    description: 'update todo',
+    type: Todo
+  })
+  @ApiResponse({
+    status:404,
+    description: 'not found',
+  })
+  @ApiBody({ type: CreateDto })
   async updateAction(
     @Param('id') id: string,
     @Body() {title, isComplited = false}: UpdateDto
@@ -49,14 +87,25 @@ export class TodoController {
   }
 
   @Delete(':id')
-  async deleteAction(@Param('id') id: string): Promise<void> {
+  @ApiResponse({
+    status:200,
+    description: 'delete todo',
+  })
+  @ApiResponse({
+    status:404,
+    description: 'not found',
+  })
+  async deleteAction(@Param('id') id: string): Promise<{success: boolean}> {
     const todo = await this.todoService.findOne(id);
     if (todo === undefined) {
       throw new HttpException(
         'Todo with id=' + id + 'not exists',
         HttpStatus.NOT_FOUND
         );
+        await this.todoService.remove(id);
     }
-    return this.todoService.remove(id);
+    return {
+      success: true
+    };
   }
 }
