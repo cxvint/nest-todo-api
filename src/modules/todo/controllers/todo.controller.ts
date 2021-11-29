@@ -1,16 +1,25 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpException, HttpStatus, NotFoundException, Param, Post, Put } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { TodoService } from '../services/todo.service';
 import { Todo } from '../entities/todo.entity';
-import { CreateDto, UpdateDto } from './dto';
-import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { type } from 'os';
+import { ApiTags } from '@nestjs/swagger';
+import {Crud, CrudController } from '@nestjsx/crud';
 
+@Crud({
+  model: {
+    type: Todo
+  }
+})
 @ApiTags('todo')
 @Controller('rest/todo')
-export class TodoController {
-  constructor(private readonly todoService: TodoService) {}
+export class TodoController implements CrudController<Todo>{
+  constructor(public service: TodoService) {}
+}
 
-  @Get()
+
+
+
+/*
+@Get()
   @ApiResponse({
     status:200,
     description: 'get all todo',
@@ -108,4 +117,4 @@ export class TodoController {
       success: true
     };
   }
-}
+  */
